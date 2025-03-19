@@ -1,0 +1,29 @@
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore build directories
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+.vscode/
+
+# JetBrains files
+.idea/
+
+# User-specific files
+*.user
+*.suo
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*~
+
+# Python files
+.venv/
+.env/
