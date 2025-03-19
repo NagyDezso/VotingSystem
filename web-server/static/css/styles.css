@@ -1,0 +1,36 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.2s ease-in-out;
+}
+
+.results-container {
+    min-height: 300px;
+}
+
+.footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Animation for new votes */
+@keyframes highlight {
+    0% { background-color: #fff8e1; }
+    100% { background-color: transparent; }
+}
+
+.vote-row-new {
+    animation: highlight 2s ease-out;
+}

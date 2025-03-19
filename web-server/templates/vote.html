@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote - {{ question.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row mb-3">
+            <div class="col">
+                <h1>{{ question.title }}</h1>
+                <a href="/" class="btn btn-sm btn-outline-secondary">Back to Home</a>
+            </div>
+        </div>
+        
+        {% if question.description %}
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">{{ question.description }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-body">
+                <form id="vote-form">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Your Name</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Choose an Option</label>
+                        {% for option in options %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="vote" id="option{{ loop.index }}" value="{{ option }}" required>
+                            <label class="form-check-label" for="option{{ loop.index }}">{{ option }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="alert alert-success d-none" id="success-message">
+                        Your vote has been recorded! Redirecting to results...
+                    </div>
+                    
+                    <div class="alert alert-danger d-none" id="error-message"></div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Submit Vote</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('vote-form');
+            const questionId = {{ question.id }};
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value.trim();
+                const voteOption = document.querySelector('input[name="vote"]:checked')?.value;
+                
+                if (!name || !voteOption) {
+                    showError('Please enter your name and select an option');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/vote/${questionId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name,
+                            vote: voteOption
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to submit vote');
+                    }
+                    
+                    // Show success message
+                    document.getElementById('success-message').classList.remove('d-none');
+                    document.getElementById('error-message').classList.add('d-none');
+                    
+                    // Disable form
+                    Array.from(form.elements).forEach(element => {
+                        element.disabled = true;
+                    });
+                    
+                    // Redirect to results page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = `/results/${questionId}`;
+                    }, 2000);
+                    
+                } catch (error) {
+                    showError(error.message);
+                }
+            });
+            
+            function showError(message) {
+                const errorElement = document.getElementById('error-message');
+                errorElement.textContent = message;
+                errorElement.classList.remove('d-none');
+                document.getElementById('success-message').classList.add('d-none');
+            }
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
