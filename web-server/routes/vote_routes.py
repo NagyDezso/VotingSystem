@@ -9,7 +9,8 @@ from backend.websocket import ConnectionManager
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="web-server/templates")
+connection_manager = ConnectionManager()  # Create an instance to use
 
 @router.post("/vote")
 async def vote(vote_data: Vote):
@@ -41,8 +42,8 @@ async def vote_for_question(question_id: int, vote_data: Vote):
     try:
         # Verify the question exists
         connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM questions WHERE id = %s", (question_id,))
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM questions WHERE id = ?", (question_id,))
         question = cursor.fetchone()
         
         if not question:
@@ -66,7 +67,9 @@ async def vote_for_question(question_id: int, vote_data: Vote):
             "name": vote_data.name, 
             "vote": vote_data.vote
         })
-        threading.Thread(target=asyncio.run, args=(ConnectionManager.broadcast(vote_json),)).start()
+        
+        # Use asyncio.create_task instead of threading for async operations
+        asyncio.create_task(connection_manager.broadcast(vote_json))
         
         return {"status": "success", "message": "Vote recorded."}
     except HTTPException:
@@ -75,6 +78,6 @@ async def vote_for_question(question_id: int, vote_data: Vote):
         print(f"Error processing vote: {e}")
         raise HTTPException(status_code=500, detail="Failed to process vote")
     finally:
-        if "connection" in locals() and connection.is_connected():
+        if "connection" in locals():
             cursor.close()
             connection.close()

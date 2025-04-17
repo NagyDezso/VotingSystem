@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voting System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-5">
@@ -39,46 +40,7 @@
         </div>
     </div>
     
-    <script>
-        // Fetch and display active questions
-        async function loadQuestions() {
-            try {
-                const response = await fetch('/questions?active_only=true');
-                const questions = await response.json();
-                
-                const container = document.getElementById('questions-container');
-                
-                if (questions.length === 0) {
-                    container.innerHTML = '<div class="col-12 text-center p-5">No active questions found.</div>';
-                    return;
-                }
-                
-                container.innerHTML = questions.map(q => `
-                    <div class="col">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">${q.title}</h5>
-                                <p class="card-text">${q.description}</p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="/question/${q.id}" class="btn btn-sm btn-primary">Vote</a>
-                                <a href="/results/${q.id}" class="btn btn-sm btn-secondary">View Results</a>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Error loading questions:', error);
-                document.getElementById('questions-container').innerHTML = 
-                    '<div class="col-12 text-center p-5 text-danger">Error loading questions. Please try again.</div>';
-            }
-        }
-        
-        // Load questions when page loads
-        document.addEventListener('DOMContentLoaded', loadQuestions);
-    </script>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/index.js"></script>
 </body>
 </html>

@@ -14,8 +14,14 @@ class ConnectionManager:
             self.active_connections.remove(websocket)
 
     async def broadcast(self, message: str):
+        disconnected = []
         for connection in self.active_connections:
             try:
                 await connection.send_text(message)
-            except Exception:
-                pass  # Handle failed sends gracefully
+            except Exception as e:
+                print(f"Error broadcasting message: {e}")
+                disconnected.append(connection)
+        
+        # Clean up disconnected clients
+        for connection in disconnected:
+            self.disconnect(connection)

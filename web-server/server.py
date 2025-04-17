@@ -30,17 +30,19 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # Keep connection alive
-            await websocket.receive_text()
+            # Keep connection alive and wait for messages
+            data = await websocket.receive_text()
+            print(f"Received message: {data}")
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
         manager.disconnect(websocket)
 
 if __name__ == "__main__":
-    import asyncio
-
     print("Starting Voting System server...")
     print(f"Database configured at: {os.getenv('DB_HOST', 'localhost')}")
-    print(f"Display notifications will be sent to: {os.getenv('DISPLAY_URL', 'http://localhost:8080')}")
+    print(f"Display notifications will be sent to: {os.getenv('DISPLAY_URL', 'http://localhost:8000')}")
     
     # Initialize the database tables
     setup_database()

@@ -6,17 +6,17 @@ from backend.database import get_db_connection
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="web-server/templates")
 
 @router.get("/questions", response_model=List[QuestionResponse])
 async def get_questions(active_only: bool = True):
     """Retrieve all voting questions"""
     try:
         connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor()
         
         if active_only:
-            cursor.execute("SELECT * FROM questions WHERE active = TRUE ORDER BY created_at DESC")
+            cursor.execute("SELECT * FROM questions WHERE active = 1 ORDER BY created_at DESC")
         else:
             cursor.execute("SELECT * FROM questions ORDER BY created_at DESC")
             
@@ -26,7 +26,7 @@ async def get_questions(active_only: bool = True):
         result = []
         for question in questions:
             cursor.execute(
-                "SELECT option_text FROM options WHERE question_id = %s",
+                "SELECT option_text FROM options WHERE question_id = ?",
                 (question['id'],)
             )
             options = [row['option_text'] for row in cursor.fetchall()]
@@ -36,7 +36,7 @@ async def get_questions(active_only: bool = True):
                 "title": question['title'],
                 "description": question['description'],
                 "options": options,
-                "active": question['active']
+                "active": bool(question['active'])  # Convert integer to boolean
             }
             result.append(question_with_options)
         
@@ -45,7 +45,7 @@ async def get_questions(active_only: bool = True):
         print(f"Error retrieving questions: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve questions")
     finally:
-        if "connection" in locals() and connection.is_connected():
+        if "connection" in locals():
             cursor.close()
             connection.close()
 
@@ -58,7 +58,7 @@ async def create_question(question: Question):
         
         # Insert question
         cursor.execute(
-            "INSERT INTO questions (title, description) VALUES (%s, %s)",
+            "INSERT INTO questions (title, description) VALUES (?, ?)",
             (question.title, question.description)
         )
         question_id = cursor.lastrowid
@@ -66,7 +66,7 @@ async def create_question(question: Question):
         # Insert options
         for option in question.options:
             cursor.execute(
-                "INSERT INTO options (question_id, option_text) VALUES (%s, %s)",
+                "INSERT INTO options (question_id, option_text) VALUES (?, ?)",
                 (question_id, option)
             )
         
@@ -76,7 +76,7 @@ async def create_question(question: Question):
         print(f"Error creating question: {e}")
         raise HTTPException(status_code=500, detail="Failed to create question")
     finally:
-        if "connection" in locals() and connection.is_connected():
+        if "connection" in locals():
             cursor.close()
             connection.close()
 
@@ -85,24 +85,24 @@ async def get_question_page(request: Request, question_id: int):
     """Get voting page for a specific question"""
     try:
         connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor()
         
         # Get question details
-        cursor.execute("SELECT * FROM questions WHERE id = %s", (question_id,))
+        cursor.execute("SELECT * FROM questions WHERE id = ?", (question_id,))
         question = cursor.fetchone()
         
         if not question:
             raise HTTPException(status_code=404, detail="Question not found")
             
         # Get options
-        cursor.execute("SELECT option_text FROM options WHERE question_id = %s", (question_id,))
+        cursor.execute("SELECT option_text FROM options WHERE question_id = ?", (question_id,))
         options = [row['option_text'] for row in cursor.fetchall()]
         
         return templates.TemplateResponse(
             "vote.html", 
             {
                 "request": request,
-                "question": question,
+                "question": dict(question),  # Convert Row to dict
                 "options": options
             }
         )
@@ -112,6 +112,6 @@ async def get_question_page(request: Request, question_id: int):
         print(f"Error retrieving question: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve question")
     finally:
-        if "connection" in locals() and connection.is_connected():
+        if "connection" in locals():
             cursor.close()
             connection.close()

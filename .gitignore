@@ -26,4 +26,8 @@ obj/
 
 # Python files
 .venv/
-.env/
+*.env
+__pycache__/
+
+# Database files
+*.db

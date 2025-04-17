@@ -1,23 +1,31 @@
-import mysql.connector
+import sqlite3
 from fastapi import HTTPException
 import threading
 import os
 from backend.models import Vote
+import pathlib
 
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "user": os.getenv("DB_USER", "voting_user"),
-    "password": os.getenv("DB_PASSWORD", "password"),
-    "database": os.getenv("DB_DATABASE", "voting_system"),
-}
+# Create database directory if it doesn't exist
+DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+os.makedirs(DB_DIR, exist_ok=True)
 
+# SQLite database file path
+DB_PATH = os.path.join(DB_DIR, "voting_system.db")
+
+# Thread lock for database operations
 db_lock = threading.Lock()
 
 def get_db_connection():
+    """Get a connection to the SQLite database"""
     try:
-        connection = mysql.connector.connect(**DB_CONFIG)
+        # SQLite will create the file if it doesn't exist
+        connection = sqlite3.connect(DB_PATH)
+        # Enable foreign keys
+        connection.execute("PRAGMA foreign_keys = ON")
+        # Return dictionary-like rows
+        connection.row_factory = sqlite3.Row
         return connection
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Database connection error: {err}")
         raise HTTPException(status_code=500, detail="Database connection error")
 
@@ -27,24 +35,13 @@ def setup_database():
         connection = get_db_connection()
         cursor = connection.cursor()
         
-        # Create votes table if it doesn't exist
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS votes (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                vote VARCHAR(255) NOT NULL,
-                question_id INT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        
         # Create questions table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS questions (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                title VARCHAR(255) NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
                 description TEXT,
-                active BOOLEAN DEFAULT TRUE,
+                active INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -52,19 +49,30 @@ def setup_database():
         # Create options table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS options (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                question_id INT NOT NULL,
-                option_text VARCHAR(255) NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                question_id INTEGER NOT NULL,
+                option_text TEXT NOT NULL,
                 FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
             )
         """)
         
+        # Create votes table if it doesn't exist
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS votes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                vote TEXT NOT NULL,
+                question_id INTEGER,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         connection.commit()
-        print("Database tables initialized successfully")
+        print(f"Database initialized successfully at {DB_PATH}")
     except Exception as e:
         print(f"Database initialization error: {e}")
     finally:
-        if "connection" in locals() and connection.is_connected():
+        if "connection" in locals():
             cursor.close()
             connection.close()
 
@@ -76,10 +84,10 @@ def write_vote_to_db(vote_data: Vote, question_id=None):
 
             # Insert the vote
             if question_id:
-                query = "INSERT INTO votes (name, vote, question_id) VALUES (%s, %s, %s)"
+                query = "INSERT INTO votes (name, vote, question_id) VALUES (?, ?, ?)"
                 values = (vote_data.name, vote_data.vote, question_id)
             else:
-                query = "INSERT INTO votes (name, vote) VALUES (%s, %s)"
+                query = "INSERT INTO votes (name, vote) VALUES (?, ?)"
                 values = (vote_data.name, vote_data.vote)
                 
             cursor.execute(query, values)
@@ -90,6 +98,6 @@ def write_vote_to_db(vote_data: Vote, question_id=None):
             print("Database error:", e)
             raise HTTPException(status_code=500, detail="Database error")
         finally:
-            if "connection" in locals() and connection.is_connected():
+            if "connection" in locals():
                 cursor.close()
                 connection.close()
