@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from backend.database import get_db_connection
+from ..backend.database import get_db_connection
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter()

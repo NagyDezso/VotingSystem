@@ -2,7 +2,7 @@ import sqlite3
 from fastapi import HTTPException
 import threading
 import os
-from backend.models import Vote
+from models import Vote
 import pathlib
 
 # Create database directory if it doesn't exist

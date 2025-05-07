@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 import json
 import threading
 import asyncio
-from backend.models import Vote
-from backend.database import get_db_connection, write_vote_to_db
-from backend.notifications import notify_display, send_udp_message
-from backend.websocket import ConnectionManager
+from ..backend.models import Vote
+from ..backend.database import get_db_connection, write_vote_to_db
+from ..backend.notifications import notify_display, send_udp_message
+from ..backend.websocket import ConnectionManager
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter()

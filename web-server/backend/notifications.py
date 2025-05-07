@@ -1,7 +1,7 @@
 import socket
 import requests
 import os
-from backend.models import Vote
+from models import Vote
 
 DISPLAY_URL = os.getenv("DISPLAY_URL", "http://localhost:8080")
 BROADCAST_IP = os.getenv("BROADCAST_IP", "255.255.255.255")
