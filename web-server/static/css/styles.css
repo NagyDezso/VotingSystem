@@ -34,3 +34,121 @@ body {
 .vote-row-new {
     animation: highlight 2s ease-out;
 }
+
+
+body.dark-mode {
+    background-color: #212529;
+    color: #f8f9fa;
+}
+
+.dark-mode .card {
+    background-color: #343a40;
+    color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+}
+
+.dark-mode .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.dark-mode .btn-outline-dark {
+    color: #f8f9fa;
+    border-color: #f8f9fa;
+}
+
+body.dark-mode .btn-primary {
+    background-color: #8B5E3C;   
+    border-color: #8B5E3C;
+    color: #fff;
+}
+
+body.dark-mode .btn-primary:hover {
+    background-color: #744c31; 
+    border-color: #6a442c;
+}
+
+body.dark-mode .btn-primary:active {
+    background-color: #5d382d;  
+    border-color: #543429;
+}
+
+body.dark-mode a.btn-outline-primary {
+    color: #adb5bd;           
+    border-color: #adb5bd;    
+}
+
+body.dark-mode a.btn-outline-primary:hover,
+body.dark-mode a.btn-outline-primary:focus {
+    color: #6c757d;          
+    border-color: #6c757d;
+    background-color: transparent; 
+}
+
+
+body.dark-mode input.form-control,
+body.dark-mode textarea.form-control {
+    background-color: #555;
+    color: #eee;
+    border-color: #777;
+}
+
+
+body.dark-mode input.form-control:focus,
+body.dark-mode textarea.form-control:focus {
+    background-color: #666;
+    border-color: #aaa;
+    color: #fff;
+    box-shadow: 0 0 0 0.2rem rgba(200, 200, 200, 0.25);
+}
+
+
+body.dark-mode small,
+body.dark-mode .form-text,
+body.dark-mode .error-message,
+body.dark-mode .help-text {
+    color: #ddd !important;  
+}
+
+
+
+body.dark-mode .nav-tabs .nav-link.active {
+    background-color: #444 !important;
+    color: #fff !important;
+    border-color: #666 !important;
+}
+
+body.dark-mode #summary-container,
+body.dark-mode #votes-container {
+    background-color: #333 !important;
+    color: #fff !important;
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+
+body.dark-mode #summary-container * ,
+body.dark-mode #votes-container * {
+    background-color: transparent !important;
+    color: inherit !important;
+}
+
+body.dark-mode #votes-container table.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #3a3a3a !important;
+}
+
+body.dark-mode #votes-container table.table-striped tbody tr:nth-of-type(even) {
+    background-color: #2a2a2a !important;
+}
+
+
+body.dark-mode #votes-container table {
+    background-color: transparent !important;
+    color: #fff !important;
+}
+
+body.dark-mode #votes-container table th,
+body.dark-mode #votes-container table td {
+    border-color: #555 !important;
+    color: #fff !important;
+}
