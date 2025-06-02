@@ -3,7 +3,8 @@ from fastapi import HTTPException
 import threading
 import os
 from backend.models import Vote
-import pathlib
+from backend.textlogger import save_vote_to_file
+
 
 # Create database directory if it doesn't exist
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
@@ -85,9 +86,15 @@ def write_vote_to_db(vote_data: Vote, question_id=None):
             # Insert the vote
             if question_id:
                 query = "INSERT INTO votes (name, vote, question_id) VALUES (?, ?, ?)"
+                vote_str = f"{vote_data.name};{vote_data.vote}"
+                save_vote_to_file(vote_str)
+
                 values = (vote_data.name, vote_data.vote, question_id)
             else:
                 query = "INSERT INTO votes (name, vote) VALUES (?, ?)"
+                vote_str = f"{vote_data.name};{vote_data.vote}"
+                save_vote_to_file(vote_str)
+
                 values = (vote_data.name, vote_data.vote)
                 
             cursor.execute(query, values)
