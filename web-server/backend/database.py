@@ -66,6 +66,29 @@ def setup_database():
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Create users table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                email TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create sessions table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                session_token TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
         
         connection.commit()
         print(f"Database initialized successfully at {DB_PATH}")
@@ -101,3 +124,18 @@ def write_vote_to_db(vote_data: Vote, question_id=None):
             if "connection" in locals():
                 cursor.close()
                 connection.close()
+
+def get_user_by_id(user_id: int):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    connection.close()
+    if user:
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"]
+        }
+    return None

@@ -8,6 +8,13 @@
     <link href="/static/css/styles.css" rel="stylesheet">
 </head>
 <body>
+    <div class="position-absolute top-0 start-0 m-3">
+    {% if user %}
+        <span>Welcome, {{ user.username }}! <a href="/logout">Logout</a></span>
+    {% else %}
+        <a href="/login">Login</a> | <a href="/register">Register</a>
+    {% endif %}
+</div>
     <div class="position-absolute top-0 end-0 m-3">
         <button id="theme-toggle" class="btn btn-outline-dark">🌙 Dark Mode</button>
     </div>

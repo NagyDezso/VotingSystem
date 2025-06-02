@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from backend.middleware import get_current_user
 
 router = APIRouter()
 templates = Jinja2Templates(directory="web-server/templates")
@@ -8,7 +9,11 @@ templates = Jinja2Templates(directory="web-server/templates")
 @router.get("/", response_class=HTMLResponse)
 async def get_home_page(request: Request):
     """Serve the home page HTML"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    current_user = get_current_user(request) 
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "user": current_user 
+    })
 
 @router.get("/create-question", response_class=HTMLResponse)
 async def get_create_question_page(request: Request):

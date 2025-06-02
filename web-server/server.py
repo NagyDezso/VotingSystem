@@ -6,9 +6,16 @@ import os
 # Import modules
 from backend.database import setup_database
 from backend.websocket import ConnectionManager
-from routes import vote_routes, question_routes, results_routes, page_routes
+from routes import vote_routes, question_routes, results_routes, page_routes, auth_routes
+from backend.middleware import auth_middleware
+from fastapi.middleware import Middleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
-app = FastAPI()
+app = FastAPI(
+    middleware=[
+        Middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
+    ]
+)
 
 # Setup static files
 app.mount("/static", StaticFiles(directory="web-server/static"), name="static")
@@ -17,6 +24,7 @@ app.mount("/static", StaticFiles(directory="web-server/static"), name="static")
 manager = ConnectionManager()
 
 # Include routers
+app.include_router(auth_routes.router)
 app.include_router(vote_routes.router)
 app.include_router(question_routes.router)
 app.include_router(results_routes.router)

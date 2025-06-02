@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse
 from typing import List
 from backend.models import Question, QuestionResponse
 from backend.database import get_db_connection
 from fastapi.templating import Jinja2Templates
+from backend.middleware import get_current_user
+
 
 router = APIRouter()
 templates = Jinja2Templates(directory="web-server/templates")
@@ -50,8 +52,10 @@ async def get_questions(active_only: bool = True):
             connection.close()
 
 @router.post("/questions")
-async def create_question(question: Question):
+async def create_question(question: Question, current_user: dict = Depends(get_current_user)):
     """Create a new voting question with options"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
