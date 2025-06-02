@@ -6,10 +6,8 @@ from backend.models import Vote
 from backend.database import get_db_connection, write_vote_to_db
 from backend.notifications import notify_display, send_udp_message
 from backend.websocket import ConnectionManager
-from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="web-server/templates")
 connection_manager = ConnectionManager()  # Create an instance to use
 
 @router.post("/vote")
@@ -32,7 +30,7 @@ async def vote(vote_data: Vote):
 
     # Broadcast to WebSocket clients
     vote_json = json.dumps({"name": vote_data.name, "vote": vote_data.vote})
-    threading.Thread(target=asyncio.run, args=(ConnectionManager.broadcast(vote_json),)).start()
+    threading.Thread(target=asyncio.run, args=(connection_manager.broadcast(vote_json),)).start()
 
     return {"status": "success", "message": "Vote recorded."}
 
