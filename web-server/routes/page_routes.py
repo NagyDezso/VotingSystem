@@ -1,13 +1,18 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from routes.common import templates
+from backend.middleware import get_current_user
 
 router = APIRouter()
 
 @router.get("/", response_class=HTMLResponse)
 async def get_home_page(request: Request):
     """Serve the home page HTML"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    current_user = get_current_user(request) 
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "user": current_user 
+    })
 
 @router.get("/create-question", response_class=HTMLResponse)
 async def get_create_question_page(request: Request):
